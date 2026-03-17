@@ -4,6 +4,8 @@ const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 const http = require("http");
 const { Server } = require("socket.io");
+// ... other imports ...
+
 require("dotenv").config();
 
 const app = express();
@@ -12,26 +14,22 @@ const io = new Server(server, {
   cors: {
     origin: "http://localhost:5173",
     methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   },
 });
 
+// CORS middleware
 app.use(cors({
   origin: "http://localhost:5173",
-  methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
+  credentials: true,
 }));
 
 app.use(express.json());
 
-// Make io accessible to routes
 app.set('io', io);
-
 app.use("/api/auth", authRoutes);
 
-// Socket.IO: Handle real-time chat
+// Sockets ...
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
@@ -39,8 +37,6 @@ io.on("connection", (socket) => {
     if (mongoose.Types.ObjectId.isValid(userId)) {
       socket.join(userId);
       console.log(`User ${userId} joined room`);
-    } else {
-      console.warn(`Invalid userId for join: ${userId}`);
     }
   });
 
@@ -48,7 +44,8 @@ io.on("connection", (socket) => {
     if (
       mongoose.Types.ObjectId.isValid(senderId) &&
       mongoose.Types.ObjectId.isValid(receiverId) &&
-      content && typeof content === "string" && content.trim()
+      typeof content === "string" &&
+      content.trim()
     ) {
       const message = {
         senderId,
@@ -57,11 +54,8 @@ io.on("connection", (socket) => {
         timestamp: timestamp || new Date(),
         isRead: false,
       };
-      console.log('Emitting message:', message);
       io.to(receiverId).emit("receiveMessage", message);
-      io.to(senderId).emit("receiveMessage", message);
-    } else {
-      console.warn("Invalid message data:", { senderId, receiverId, content });
+      io.to(senderId).emit("receiveMessage", message); // optional: echo back to sender
     }
   });
 
@@ -70,23 +64,18 @@ io.on("connection", (socket) => {
   });
 });
 
-// MongoDB connection with retry logic
-mongoose.set("bufferCommands", false);
-const connectWithRetry = async () => {
+// MongoDB
+const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 30000,
-    });
-    console.log("MongoDB connected");
+    await mongoose.connect(process.env.MONGO_URI || process.env.MONGODB_URI);
+    console.log("MongoDB connected ✅");
   } catch (err) {
     console.error("MongoDB connection error:", err.message);
-    console.log("Retrying connection in 5 seconds...");
-    setTimeout(connectWithRetry, 5000);
+    setTimeout(connectDB, 5000);
   }
 };
-connectWithRetry();
+
+connectDB();
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

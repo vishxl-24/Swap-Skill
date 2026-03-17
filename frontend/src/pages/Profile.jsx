@@ -25,7 +25,7 @@ const Profile = () => {
           return;
         }
 
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/user`, {
+        const response = await axios.get('http://localhost:5000/api/auth/user', {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
@@ -42,7 +42,7 @@ const Profile = () => {
         });
       } catch (err) {
         console.error('Failed to fetch user data:', err);
-        setError(err.response?.data?.message || 'Failed to load profile. Please check your connection or login status.');
+        setError(err.response?.data?.message || 'Failed to load profile');
       } finally {
         setLoading(false);
       }
@@ -52,7 +52,7 @@ const Profile = () => {
   }, []);
 
   const handleChange = (e) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
@@ -68,14 +68,14 @@ const Profile = () => {
 
       const skillsArray = formData.skills
         .split(',')
-        .map((skill) => skill.trim())
-        .filter((skill) => skill && skill !== formData.field);
+        .map(skill => skill.trim())
+        .filter(skill => skill);
 
       await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/auth/profile`,
+        'http://localhost:5000/api/auth/profile',
         {
           name: formData.name,
-          skills: formData.field ? [formData.field, ...skillsArray] : skillsArray,
+          skills: [formData.field, ...skillsArray.filter(skill => skill !== formData.field)],
           bio: formData.bio,
         },
         {
@@ -90,7 +90,7 @@ const Profile = () => {
       navigate('/dashboard');
     } catch (err) {
       console.error('Failed to update profile:', err);
-      alert(err.response?.data?.message || 'Failed to update profile. Please try again.');
+      alert(err.response?.data?.message || 'Failed to update profile');
     }
   };
 
@@ -170,7 +170,7 @@ const Profile = () => {
           width: 0;
           height: 0;
           background: rgba(255, 255, 255, 0.3);
-          border-radius: 50%;
+          borderRadius: 50%;
           transform: translate(-50%, -50%);
           opacity: 0;
           transition: width 0.3s, height 0.3s, opacity 0.3s;
@@ -180,6 +180,13 @@ const Profile = () => {
           height: 200px;
           opacity: 1;
         }
+        html, body {
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          height: 100%;
+          overflow-x: hidden;
+        }
       `}</style>
 
       <div style={styles.header}>
@@ -188,14 +195,14 @@ const Profile = () => {
           onClick={() => navigate('/dashboard')}
           title="Back to Dashboard"
           onMouseEnter={(e) => {
-            e.target.style.transform = 'scale(1.05)';
-            e.target.style.boxShadow = '0 6px 15px rgba(77, 208, 225, 0.4)';
-            e.target.style.backgroundColor = '#4dd0e1';
+            e.target.style.transform = "scale(1.05)";
+            e.target.style.boxShadow = "0 6px 15px rgba(77, 208, 225, 0.4)";
+            e.target.style.backgroundColor = "#4dd0e1";
           }}
           onMouseLeave={(e) => {
-            e.target.style.transform = 'scale(1)';
-            e.target.style.boxShadow = '0 2px 5px rgba(77, 208, 225, 0.2)';
-            e.target.style.backgroundColor = '#00cfff';
+            e.target.style.transform = "scale(1)";
+            e.target.style.boxShadow = "0 2px 5px rgba(77, 208, 225, 0.2)";
+            e.target.style.backgroundColor = "#00cfff";
           }}
         >
           <FaArrowLeft style={{ marginRight: 8 }} /> Back
@@ -219,8 +226,9 @@ const Profile = () => {
             style={styles.input}
             name="email"
             value={formData.email}
-            disabled
+            onChange={handleChange}
             placeholder="Your Email"
+            disabled
           />
 
           <label style={styles.label}>Field of Excellence</label>
@@ -229,19 +237,19 @@ const Profile = () => {
             name="field"
             value={formData.field}
             onChange={handleChange}
-            placeholder="e.g., Graphic Design, Web Development"
+            placeholder="e.g., Graphic Design, Web Dev"
           />
 
           <label style={styles.label}>Bio</label>
           <textarea
-            style={{ ...styles.input, height: '100px', resize: 'vertical' }}
+            style={{ ...styles.input, height: '100px' }}
             name="bio"
             value={formData.bio}
             onChange={handleChange}
             placeholder="Tell us about yourself..."
           />
 
-          <label style={styles.label}>Skills (comma-separated)</label>
+          <label style={styles.label}>Skills</label>
           <input
             style={styles.input}
             name="skills"
@@ -255,14 +263,14 @@ const Profile = () => {
             onClick={handleSave}
             className="save-button"
             onMouseEnter={(e) => {
-              e.target.style.transform = 'scale(1.05)';
-              e.target.style.boxShadow = '0 6px 15px rgba(77, 208, 225, 0.4)';
-              e.target.style.backgroundColor = '#4dd0e1';
+              e.target.style.transform = "scale(1.05)";
+              e.target.style.boxShadow = "0 6px 15px rgba(77, 208, 225, 0.4)";
+              e.target.style.backgroundColor = "#4dd0e1";
             }}
             onMouseLeave={(e) => {
-              e.target.style.transform = 'scale(1)';
-              e.target.style.boxShadow = '0 2px 5px rgba(77, 208, 225, 0.2)';
-              e.target.style.backgroundColor = '#00cfff';
+              e.target.style.transform = "scale(1)";
+              e.target.style.boxShadow = "0 2px 5px rgba(77, 208, 225, 0.2)";
+              e.target.style.backgroundColor = "#00cfff";
             }}
           >
             <FaSave style={{ marginRight: 8 }} /> Save Changes
@@ -276,40 +284,40 @@ const Profile = () => {
 const styles = {
   container: {
     fontFamily: "'Inter', sans-serif",
-    background: 'linear-gradient(135deg, #5a8ab5 0%, #7eb0d5 50%, #a8c8e5 100%)',
-    minHeight: '100vh',
-    padding: '40px',
-    color: '#fff',
-    position: 'relative',
-    overflow: 'hidden',
-    boxSizing: 'border-box',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
+    background: "linear-gradient(135deg, #5a8ab5 0%, #7eb0d5 50%, #a8c8e5 100%)",
+    minHeight: "100vh",
+    padding: "40px",
+    color: "#fff",
+    position: "relative",
+    overflow: "hidden",
+    boxSizing: "border-box",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
   },
   waveOverlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     backgroundImage: `
       url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNDQwIDU2MCI+PHBhdGggZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBmaWxsLW9wYWNpdHk9IjAuNCIgZD0iTTAsMTkyTDQ4LDE3NiBDOTYsMTYwLDE5MiwxMjgsMjg4LDE0NCBDMzg0LDE2MCw0ODAsMjA4LDU3NiwyMTYgQzY3MiwyMjQsNzY4LDE5Miw4NjQsMTY4IEM5NjAsMTQ0LDEwNTYsMTI4LDExNTIsMTQ0IEMxMjQ4LDE2MCwxMzQ0LDE5MiwxMzkyLDIwOCBMMTQ0MCwyMjQgVjU2MCBIMTAgQzQ8MCwyNTYsOTYwLDE5MiwxNDQwLDE5MiBaIj48L3BhdGggPjwvc3ZnPg=='),
-      url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNDQwIDU2MCI+PHBhdGggZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjE1KSIgZmlsbC1vcGFjaXR5PSIwLjMiIGQ9Ik0wLDMyMEw0OCwzMDQgQzk2LDI4OCwxOTIsMjU2LDI4OCwyNzIgQzM4NCwyODgsNDgwLDMzNiw1NzYsMzQ0IEM2NzIsMzUyLDc2OCwzMjAsODY0LDI5NiBDOTYwLDI3MiwxMDU2LDI1NiwxMTUyLDI3MiBDMTI0OCwyODgsMTM0NCwzMjAsMTM5MiwzMzYgTDE0NDAsMzUyIFY1NjAgSDE0NDAgQzQ8MCwzODQsOTYwLDMyMCwxNDQwLDMyMCZaIj48L3BhdGggPjwvc3ZnPg==')
+      url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNDQwIDU2MCI+PHBhdGggZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjE1KSIgZmlsbC1vcGFjaXR5PSIwLjMiIGQ9Ik0wLDMyMEw0OCwzMDQgQzk2LDI4OCwxOTIsMjU2LDI4OCwyNzIgQzM4NCwyODgsNDgwLDMzNiw1NzYsMzQ0IEM6NzIsMzUyLDc2OCwzMjAsODY0LDI5NiBDOTYwLDI3MiwxMDX6LDI1NiwxMTUyLDI3MiBDMTI0OCwyODgsMTM0NCwzMjAsMTM5MiwzMzYgTDE0NDAsMzUyIFY1NjAgSDE0NDAgQzQ8MCwzODQsOTYwLDMyMCwxNDQwLDMyMCZaIj48L3BhdGggPjwvc3ZnPg==')
     `,
-    backgroundSize: 'cover, cover',
-    backgroundPosition: 'center bottom, center top',
-    backgroundRepeat: 'no-repeat, no-repeat',
+    backgroundSize: "cover, cover",
+    backgroundPosition: "center bottom, center top",
+    backgroundRepeat: "no-repeat, no-repeat",
     zIndex: 1,
   },
   particleOverlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     zIndex: 2,
-    pointerEvents: 'none',
+    pointerEvents: "none",
   },
   header: {
     display: 'flex',
@@ -317,7 +325,7 @@ const styles = {
     gap: '20px',
     marginBottom: '30px',
     zIndex: 3,
-    position: 'relative',
+    position: "relative",
   },
   backButton: {
     padding: '10px 16px',
@@ -330,16 +338,16 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     transition: 'transform 0.2s, box-shadow 0.3s, background-color 0.3s',
-    boxShadow: '0 2px 5px rgba(77, 208, 225, 0.2)',
-    position: 'relative',
-    overflow: 'hidden',
+    boxShadow: "0 2px 5px rgba(77, 208, 225, 0.2)",
+    position: "relative",
+    overflow: "hidden",
   },
   heading: {
     textAlign: 'center',
     margin: 0,
     color: '#fff',
     fontSize: '2rem',
-    textShadow: '0 0 15px rgba(77, 208, 225, 0.6)',
+    textShadow: "0 0 15px rgba(77, 208, 225, 0.6)",
     fontWeight: 600,
   },
   formContainer: {
@@ -349,10 +357,10 @@ const styles = {
     borderRadius: '14px',
     padding: '30px',
     boxShadow: '0 4px 10px rgba(77, 208, 225, 0.2)',
-    backdropFilter: 'blur(12px)',
-    border: '1px solid rgba(77, 208, 225, 0.2)',
+    backdropFilter: "blur(12px)",
+    border: "1px solid rgba(77, 208, 225, 0.2)",
     zIndex: 3,
-    position: 'relative',
+    position: "relative",
   },
   form: {
     display: 'flex',
@@ -363,14 +371,14 @@ const styles = {
     fontWeight: 'bold',
     color: '#e0ecf2',
     fontSize: '1.1rem',
-    textShadow: '0 0 5px rgba(77, 208, 225, 0.2)',
+    textShadow: "0 0 5px rgba(77, 208, 225, 0.2)",
   },
   input: {
     padding: '12px',
     fontSize: '16px',
     borderRadius: '8px',
     border: '1px solid rgba(77, 208, 225, 0.3)',
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
     color: '#fff',
     outline: 'none',
     transition: 'border 0.3s, box-shadow 0.3s',
@@ -390,16 +398,16 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0 2px 5px rgba(77, 208, 225, 0.2)',
-    position: 'relative',
-    overflow: 'hidden',
+    boxShadow: "0 2px 5px rgba(77, 208, 225, 0.2)",
+    position: "relative",
+    overflow: "hidden",
   },
   error: {
-    color: '#ff6b6b',
-    textAlign: 'center',
-    textShadow: '0 0 5px rgba(255, 107, 107, 0.3)',
+    color: "#ff6b6b",
+    textAlign: "center",
+    textShadow: "0 0 5px rgba(255, 107, 107, 0.3)",
     zIndex: 3,
-    position: 'relative',
+    position: "relative",
   },
 };
 

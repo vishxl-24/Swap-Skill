@@ -770,6 +770,7 @@ router.post("/chat/message", verifyToken, async (req, res) => {
 
 // Mark messages as read
 router.post("/chat/mark-read/:userId", verifyToken, async (req, res) => {
+  console.log("vantanda");
   try {
     const userId = req.user.userId;
     const otherUserId = req.params.userId;
